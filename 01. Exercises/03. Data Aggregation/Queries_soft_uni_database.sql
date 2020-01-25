@@ -31,7 +31,13 @@ GROUP BY `manager_id`;
 #soonTM
 
 #18. Salary Challenge
-#soonTM
+SELECT e.`first_name`, e.`last_name`, e.`department_id` FROM `employees` AS `e`
+WHERE `salary` > (
+    SELECT avg(e2.`salary`) FROM `employees` AS  `e2`
+    WHERE e2.`department_id` = e.`department_id`
+    GROUP BY e2.`department_id`)
+ORDER BY e.`department_id`, e.`employee_id`
+LIMIT 10;
 
 #19. Departments Total Salaries
 SELECT `department_id`, sum(`salary`) AS `total_salary` FROM `employees`
