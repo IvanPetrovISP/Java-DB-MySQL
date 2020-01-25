@@ -65,4 +65,9 @@ GROUP BY `deposit_group`, `is_deposit_expired`
 ORDER BY `deposit_group` DESC , `is_deposit_expired`;
 
 #12. Rich Wizard, Poor Wizard
-#soonTM
+SELECT SUM(`diff`.`next`) AS 'sum_difference'
+FROM (SELECT `deposit_amount` -
+             (SELECT `deposit_amount`
+              FROM `wizzard_deposits`
+              WHERE `id` = `wd`.`id` + 1) AS 'next'
+      FROM `wizzard_deposits` AS `wd`) AS `diff`;
