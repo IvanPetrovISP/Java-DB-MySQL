@@ -207,7 +207,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT  = 'Spaceship you are trying to modify does not exists.';
     END IF;
-END;;
+END ;;
 DELIMITER ;
 
 /*
