@@ -30,8 +30,7 @@ CREATE TABLE `clients` (
 CREATE TABLE `employees_clients` (
     `employee_id` INT,
     `client_id` INT,
-    CONSTRAINT `pk_employees_clients`
-        PRIMARY KEY (`employee_id`, `client_id`),
+    KEY `pk_employees_clients`(`employee_id`, `client_id`),
     CONSTRAINT `fk_employees_clients_employees`
         FOREIGN KEY (`employee_id`)
             REFERENCES `employees`(`id`),
@@ -67,22 +66,18 @@ SELECT reverse(`full_name`) AS `name`, 'Active' AS `status`, `id` FROM `clients`
 WHERE `id` >= 191 AND `id` <= 200;
 
 #03. Update
-UPDATE `employees_clients` as `ec`, (
-    SELECT count(ec2.`client_id`) AS `count` FROM `employees_clients` AS `ec2`
-    GROUP BY `ec2`.`employee_id`
-    ORDER BY `count`, ec2.`employee_id`
-    LIMIT 1
-    ) as `ec2`
-SET ec.`employee_id` = `ec2`.`count`
-WHERE ec.`client_id` = ec.`employee_id`;
+UPDATE `employees_clients` AS `ec`
+JOIN (
+    SELECT `ec2`.`employee_id` FROM `employees_clients` AS `ec2`
+    GROUP BY ec2.`employee_id`
+    ORDER BY count(ec2.`client_id`), ec2.`employee_id`
+    LIMIT 1) AS `result`
+SET ec.`employee_id` = `result`.employee_id
+WHERE ec.`employee_id` = ec.`client_id`;
 
 #04. Delete
-DELETE FROM `employees_clients`, `employees`
-WHERE (
-    SELECT e.`id` FROM `employees` as `e`
-    LEFT JOIN `employees_clients` `ec2` ON `e`.`id` = `ec2`.`employee_id`
-    WHERE ec2.`client_id` IS NULL
-    );
+DELETE FROM `employees`
+WHERE `id` NOT IN (SELECT ec.`employee_id` FROM `employees_clients` AS `ec`);
 
 #Section 3: Querying
 #05. Clients
@@ -121,19 +116,36 @@ ORDER BY `count_of_cards` DESC, b.`name`;
 
 #Section 4: Programmability
 #10. Extract card's count
-CREATE PROCEDURE `udf_client_cards_count`(
-IN `input` VARCHAR(45),
-OUT `full_name` VARCHAR(45),
-OUT `cards_count` INT
-)
+DELIMITER ;;
+CREATE FUNCTION `udf_client_cards_count` (`name` VARCHAR(30))
+RETURNS INT
+    DETERMINISTIC
 BEGIN
-    SELECT `input` INTO `full_name`;
-
-    SELECT count(c.`id`) FROM `clients` as `cl`
-    JOIN `bank_accounts` `ba` ON `cl`.`id` = `ba`.`client_id`
-    JOIN `cards` `c` ON `ba`.`id` = `c`.`bank_account_id`
-    WHERE cl.`full_name` = `input`
-    GROUP BY cl.`full_name` INTO `cards_count`;
-END ;
+    DECLARE `cards_count` INT;
+    SET `cards_count` = (
+        SELECT count(c.`id`) as `result`
+        FROM `clients` AS `cl`
+        JOIN `bank_accounts` `ba` ON `cl`.`id` = `ba`.`client_id`
+        JOIN `cards` `c` ON `ba`.`id` = `c`.`bank_account_id`
+        WHERE cl.`full_name` = `name`
+        GROUP BY cl.`full_name`);
+    RETURN `cards_count`;
+END ;;
+DELIMITER ;
 
 #11. Client Info
+DELIMITER ;;
+CREATE PROCEDURE `udp_clientinfo` (`full_name` VARCHAR(50))
+BEGIN
+SELECT cl.`full_name`, cl.`age`, ba.`account_number`, concat('$', ba.`balance`) as `balance`
+    FROM `clients` AS `cl`
+    JOIN `bank_accounts` `ba` ON `cl`.`id` = `ba`.`client_id`
+    WHERE cl.`full_name` = `full_name`;
+END ;;
+DELIMITER ;
+
+/*
+ The SoftUni Open Judge System does not accept the
+ DETERMINISTIC and DELIMITER clauses so the functions
+ from Section 4 must be submitted without them.
+ */
