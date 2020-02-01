@@ -175,4 +175,43 @@ LIMIT 1;
 
 #Section 4: Programmability
 #15. Get colonists count
+DELIMITER ;;
+CREATE FUNCTION `udf_count_colonists_by_destination_planet` (`planet_name` VARCHAR(30))
+RETURNS INT
+    DETERMINISTIC
+BEGIN
+    DECLARE `colonist_count` INT;
+    SET `colonist_count` = (
+        SELECT count(c.`id`) AS `result` FROM `colonists` AS `c`
+        JOIN `travel_cards` `tc` ON `c`.`id` = `tc`.`colonist_id`
+        JOIN `journeys` `j` ON `tc`.`journey_id` = `j`.`id`
+        JOIN `spaceports` `s` ON `j`.`destination_spaceport_id` = `s`.`id`
+        JOIN `planets` `p` ON `s`.`planet_id` = `p`.`id`
+        WHERE p.`name` = `planet_name`);
+    RETURN `colonist_count`;
+END ;;
+DELIMITER ;
+
 #16. Modify spaceship
+DELIMITER ;;
+CREATE PROCEDURE `udp_modify_spaceship_light_speed_rate` (`spaceship_name` VARCHAR(50), light_speed_rate_increse INT(11))
+BEGIN
+    IF ((SELECT count(ss.`name`) as `count`
+        FROM `spaceships` AS `ss`
+        WHERE ss.`name` = `spaceship_name`) > 0)
+        THEN
+        UPDATE `spaceships` as `ss`
+        SET ss.`light_speed_rate` = ss.`light_speed_rate` + `light_speed_rate_increse`
+        WHERE ss.`name` = `spaceship_name`;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT  = 'Spaceship you are trying to modify does not exists.';
+    END IF;
+END;;
+DELIMITER ;
+
+/*
+ The SoftUni Open Judge System does not accept the
+ DETERMINISTIC and DELIMITER clauses so the functions
+ from Section 4 must be submitted without them.
+ */
