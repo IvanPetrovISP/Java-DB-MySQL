@@ -83,6 +83,18 @@ JOIN `commits` `c` ON `f`.`commit_id` = `c`.`id`
 WHERE f.`id` >= 46 and f.`id` <=50;
 
 #03. Update
+UPDATE `repositories_contributors` AS `rc`
+JOIN (
+    SELECT r.`id` AS 'result'
+    FROM `repositories` AS `r`
+    WHERE r.`id` NOT IN (
+        SELECT `repository_id`
+        FROM `repositories_contributors`)
+    ORDER BY r.`id`
+    LIMIT 1) AS `d`
+SET rc.`repository_id` = d.`result`
+WHERE rc.`contributor_id` = rc.`repository_id`;
+
 #04. Delete
 DELETE FROM `repositories`
 WHERE `id` NOT IN (SELECT i.`repository_id` FROM `issues` as `i` );
@@ -118,13 +130,115 @@ WHERE f2.`parent_id` IS NULL
 ORDER BY f.`id`;
 
 #10. ActiveRepositories
+SELECT r.`id`, r.`name`, count(r.`id`) as `issues`
+FROM `repositories` AS `r`
+JOIN `issues` `i` ON `r`.`id` = `i`.`repository_id`
+GROUP BY r.`id`
+ORDER BY `issues` DESC, r.`id`
+LIMIT 5;
+
 #11. MostContributedRepository
+SELECT r.`id`, r.`name`,
+       (SELECT count(c.`id`) FROM `commits` as `c`
+           WHERE c.`repository_id` = r.`id`) AS `commits`,
+       (SELECT count(rc.`contributor_id`) FROM `repositories_contributors` AS `rc`
+       WHERE rc.`repository_id` = r.`id`) as `contributors`
+FROM `repositories` AS `r`
+WHERE r.`id` =
+      (SELECT r.`repository_id` FROM `repositories_contributors` AS `r`
+       GROUP BY r.`repository_id`
+       ORDER BY count(r.`contributor_id`)
+       DESC, `repository_id`
+       LIMIT 1);
+
 #12. FixingMyOwnProblems
+SELECT u.`id`, u.`username`, sum(
+    if(c.`contributor_id` = u.`id`, 1, 0)) AS `commits`
+FROM `users` AS `u`
+LEFT JOIN `issues` `i` ON `u`.`id` = `i`.`assignee_id`
+LEFT JOIN `commits` `c` ON `i`.`id` = `c`.`issue_id`
+GROUP BY u.`id`
+ORDER BY `commits` DESC, u.`id`;
+
 #13. RecursiveCommits
+SELECT count(locate('Find.java', c.message)) as `count`
+FROM `commits` AS `c`;
+
+SELECT substring(f.`name`, 1, locate('.', f.`name`)-1) as `file`,
+       count(locate(f.`name`, c.`message`)) AS `recursive_count`
+FROM `files` AS `f`
+JOIN `files` `f2` ON f.`id` = `f2`.`parent_id`
+JOIN `commits` `c` ON `f`.`commit_id` = `c`.`id`
+WHERE f2.`id` = f.`parent_id` AND  f.`id` = f2.`parent_id` and f.`id` != f.`parent_id`
+GROUP BY `file`
+ORDER BY `file`;
+
 #14. RepositoriesAndCommits
+SELECT r.`id`, r.`name`, count(DISTINCT c.`contributor_id`)AS `users`
+FROM `repositories` AS `r`
+LEFT JOIN `commits` `c` ON `r`.`id` = `c`.`repository_id`
+GROUP BY r.`id`
+ORDER BY `users` DESC, r.`id`;
+
 #Section 4: Programmability
 #15. Commit
+DELIMITER ;;
+CREATE PROCEDURE `udp_commit` (`username` VARCHAR(255), `password` VARCHAR(255), `message` VARCHAR(255), `issue_id` INT)
+BEGIN
+    DECLARE `counter` INT;
+    SET `counter` = 0;
+    IF ((SELECT count(u.`username`) as `count`
+        FROM `users` AS `u`
+        WHERE u.`username` = `username`) > 0)
+    THEN
+        SET `counter` = `counter` + 1;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No such user!';
+    END IF;
+    IF ((SELECT u.`password`
+        FROM `users` AS `u`
+        WHERE u.`username` = `username`) = `password`)
+    THEN
+        SET `counter` = `counter` + 1;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Password is incorrect!';
+    END IF;
+    IF ((SELECT count(i.`id`) as `count`
+        FROM `issues` AS `i`
+        WHERE i.`id` = `issue_id`) > 0)
+    THEN
+        SET `counter` = `counter` + 1;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The issue does not exist!';
+    END IF;
+    IF (`counter` = 3)
+    THEN
+        INSERT INTO `commits` (`message`, `issue_id`, `repository_id`, `contributor_id`)
+        VALUES (`message`, `issue_id`,
+                (SELECT i.`repository_id` FROM `issues` AS `i`
+                    WHERE i.`id` = `issue_id`),
+                (SELECT u.`id` FROM `users` AS `u`
+                    WHERE u.`username` = `username`));
+        UPDATE `issues` AS `i`
+        SET i.`issue_status` = 'closed'
+        WHERE i.`id` = `issue_id`;
+    END IF ;
+END ;;
+DELIMITER ;
+
 #16. Filter Extensions
+DELIMITER ;;
+CREATE PROCEDURE `udp_findbyextension` (`extension` VARCHAR(255))
+BEGIN
+    SELECT f.`id`, f.`name` AS `caption`, concat(f.`size`, 'KB') AS `user`
+    FROM `files` AS `f`
+    WHERE f.name LIKE (CONCAT('%', `extension`))
+    ORDER BY f.`id`;
+END ;;
+DELIMITER ;
 
 /*
  The SoftUni Open Judge System does not accept the
