@@ -158,8 +158,7 @@ ORDER BY p.`user_id`;
 #14. Posts and Commentators
 SELECT p.`id`, p.`caption`, count(DISTINCT c.`user_id`) as `users`
 FROM `posts` AS `p`
-JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
-JOIN `users` `u` ON `c`.`user_id` = `u`.`id`
+LEFT JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
 GROUP BY p.`id`
 ORDER BY `users` DESC, p.`id`;
 
