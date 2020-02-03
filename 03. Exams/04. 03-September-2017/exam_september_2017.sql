@@ -120,6 +120,16 @@ WHERE (
     WHERE u.`profile_picture_id` = u2.`profile_picture_id`) > 1
 ORDER BY u.`id`;
 
+#10. Spam Posts
+SELECT p.`id`, p.`caption`, count(p.`id`) AS `comments`
+FROM `posts` AS `p`
+JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
+GROUP BY p.`id`
+ORDER BY `comments` DESC, p.`id`
+LIMIT 5;
+
+#11. Most Popular User
+
 #Section 4: Programmability
 
 /*
