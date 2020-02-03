@@ -91,6 +91,15 @@ SELECT u.`id`, u.`username`
 FROM `users` AS `u`
 ORDER BY u.`id`;
 
+#06. Cheaters
+SELECT u.`id`, u.`username`
+FROM `users` AS `u`
+JOIN `users_followers` `uf` ON `u`.`id` = `uf`.`user_id`
+WHERE uf.`user_id` = uf.`follower_id`
+ORDER BY u.`id`;
+
+#07. High Quality Pictures
+
 #Section 4: Programmability
 
 /*
