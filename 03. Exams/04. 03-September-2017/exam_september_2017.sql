@@ -110,6 +110,16 @@ FROM `comments` AS `c`
 JOIN `users` `u` ON `c`.`user_id` = `u`.`id`
 ORDER BY c.`id` DESC;
 
+#09. Profile Pictures
+SELECT u.`id`, u.`username`, concat(p.`size`, 'KB') as `size`
+FROM `users` AS `u`
+JOIN `pictures` `p` ON `u`.`profile_picture_id` = `p`.`id`
+WHERE (
+    SELECT count(u.`profile_picture_id`)
+    FROM `users` AS `u2`
+    WHERE u.`profile_picture_id` = u2.`profile_picture_id`) > 1
+ORDER BY u.`id`;
+
 #Section 4: Programmability
 
 /*
