@@ -148,8 +148,20 @@ GROUP BY u.`id`
 ORDER BY `my_comments` DESC, u.`id`;
 
 #13. User Top Posts
-#14. Posts and Commentators
+SELECT p.`user_id` as `id`, u.`username`, p.`caption` as `post`
+FROM `posts` AS `p`
+JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
+JOIN `users` `u` ON `p`.`user_id` = `u`.`id`
+GROUP BY p.`user_id`, (SELECT count(c.`post_id`))
+ORDER BY p.`user_id`;
 
+#14. Posts and Commentators
+SELECT p.`id`, p.`caption`, count(DISTINCT c.`user_id`) as `users`
+FROM `posts` AS `p`
+JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
+JOIN `users` `u` ON `c`.`user_id` = `u`.`id`
+GROUP BY p.`id`
+ORDER BY `users` DESC, p.`id`;
 
 #Section 4: Programmability
 #15. Post
