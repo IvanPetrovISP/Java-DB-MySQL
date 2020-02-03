@@ -87,6 +87,9 @@ WHERE `id` = (
 
 #Section 3: Querying
 #05. Users
+SELECT u.`id`, u.`username`
+FROM `users` AS `u`
+ORDER BY u.`id`;
 
 #Section 4: Programmability
 
