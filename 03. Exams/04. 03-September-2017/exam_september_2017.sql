@@ -99,6 +99,10 @@ WHERE uf.`user_id` = uf.`follower_id`
 ORDER BY u.`id`;
 
 #07. High Quality Pictures
+SELECT p.`id`, p.`path`, p.`size`
+FROM `pictures` AS `p`
+WHERE p.`size` > 50000 AND (p.`path` LIKE '%.jpeg' OR p.`path` LIKE '%.png')
+ORDER BY p.`size` DESC;
 
 #Section 4: Programmability
 
