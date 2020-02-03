@@ -104,6 +104,12 @@ FROM `pictures` AS `p`
 WHERE p.`size` > 50000 AND (p.`path` LIKE '%.jpeg' OR p.`path` LIKE '%.png')
 ORDER BY p.`size` DESC;
 
+#08. Comments and Users
+SELECT c.`id`, concat(u.`username`, ' : ', c.`content`) as `full_comment`
+FROM `comments` AS `c`
+JOIN `users` `u` ON `c`.`user_id` = `u`.`id`
+ORDER BY c.`id` DESC;
+
 #Section 4: Programmability
 
 /*
