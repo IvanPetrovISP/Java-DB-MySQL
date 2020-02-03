@@ -139,7 +139,21 @@ GROUP BY u.`id`
 ORDER BY followers DESC
 LIMIT 1;
 
+#12. Commenting Myself
+SELECT u.`id`, u.`username`, count(c.`id`) AS `my_comments`
+FROM `users` AS `u`
+LEFT JOIN `posts` `p` ON `u`.`id` = `p`.`user_id`
+LEFT JOIN `comments` `c` ON `u`.`id` = `c`.`user_id` AND c.`post_id` = p.`id`
+GROUP BY u.`id`
+ORDER BY `my_comments` DESC, u.`id`;
+
+#13. User Top Posts
+#14. Posts and Commentators
+
+
 #Section 4: Programmability
+#15. Post
+#16. Filter
 
 /*
  The SoftUni Open Judge System does not accept the
