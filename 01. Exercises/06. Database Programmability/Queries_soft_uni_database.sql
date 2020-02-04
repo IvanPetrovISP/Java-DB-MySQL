@@ -90,3 +90,40 @@ BEGIN
 END;
 
 SELECT `ufn_is_word_comprised`('oistmiahf', 'Sofia');
+
+#08. Find Full Name
+CREATE PROCEDURE `usp_get_holders_full_name` ()
+BEGIN
+    SELECT concat(ah.`first_name`, ' ', ah.`last_name`) AS `full_name`
+    FROM `account_holders` AS `ah`
+    ORDER BY `full_name`;
+END;
+
+#9. People with Balance Higher Than
+CREATE PROCEDURE `usp_get_holders_with_balance_higher_than` (`balance` DOUBLE)
+BEGIN
+    SELECT DISTINCT ah.`first_name`, ah.`last_name`
+    FROM `accounts` AS `a`
+    JOIN `account_holders` `ah` ON `ah`.`id` = `a`.`account_holder_id`
+    WHERE (SELECT sum(a2.`balance`) FROM `accounts` AS `a2`
+            WHERE a2.`account_holder_id` = ah.`id`
+            GROUP BY a2.`account_holder_id`) > `balance`
+    GROUP BY a.`account_holder_id`, a.`id`
+    ORDER BY a.`id`;
+END;
+
+CALL `usp_get_holders_with_balance_higher_than`(7000);
+
+#10. Future Value Function
+CREATE FUNCTION `ufn_calculate_future_value` (`sum` DOUBLE, `yearly_interest_rate` DOUBLE, `number_of_years` DOUBLE)
+RETURNS FIXED
+BEGIN
+    DECLARE `result` FIXED;
+    DECLARE i INT;
+    SET `result` = `sum`;
+    SET i = 1;
+    WHILE 1 <= `number_of_years` DO
+        SET `result` = `result` + ((`result` / 100) * `yearly_interest_rate`);
+        END WHILE;
+    RETURN `result`;
+END;
