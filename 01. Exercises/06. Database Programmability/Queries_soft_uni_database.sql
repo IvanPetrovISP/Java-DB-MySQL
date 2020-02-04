@@ -115,15 +115,30 @@ END;
 CALL `usp_get_holders_with_balance_higher_than`(7000);
 
 #10. Future Value Function
-CREATE FUNCTION `ufn_calculate_future_value` (`sum` DOUBLE, `yearly_interest_rate` DOUBLE, `number_of_years` DOUBLE)
-RETURNS FIXED
+CREATE FUNCTION `ufn_calculate_future_value`
+    (`sum` DECIMAL(20,4), `yearly_interest_rate` DECIMAL(20,4), `number_of_years` INT)
+RETURNS DECIMAL(20,4)
+    DETERMINISTIC
 BEGIN
-    DECLARE `result` FIXED;
-    DECLARE i INT;
-    SET `result` = `sum`;
-    SET i = 1;
-    WHILE 1 <= `number_of_years` DO
-        SET `result` = `result` + ((`result` / 100) * `yearly_interest_rate`);
-        END WHILE;
+    DECLARE `result` DECIMAL(20,4);
+    SET result := `sum` * POW(1 + `yearly_interest_rate`, `number_of_years`);
     RETURN `result`;
 END;
+
+CALL ufn_calculate_future_value(1000, 0.1, 5);
+
+#11. Calculating Interest
+CREATE PROCEDURE `usp_calculate_future_value_for_account`
+	(`account_id` INT, `interest_rate` DECIMAL(20,4))
+BEGIN
+	SELECT a.`id`, h.`first_name`, h.`last_name`, a.`balance`,
+		ufn_calculate_future_value(a.`balance`, interest_rate, 5) AS `balance_in_5_years`
+	FROM `account_holders` AS `h`
+    JOIN `accounts` `a` ON `a`.`account_holder_id` = `h`.`id`
+	WHERE a.`id` = `account_id`
+    GROUP BY a.`account_holder_id`;
+END;
+
+CALL usp_calculate_future_value_for_account(1, 0.1);
+
+#12. Deposit Money
