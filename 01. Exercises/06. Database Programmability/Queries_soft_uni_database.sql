@@ -59,3 +59,34 @@ BEGIN
 END;
 
 #06. Employees by Salary Level
+CREATE PROCEDURE `usp_get_employees_by_salary_level` (`level` VARCHAR(255))
+BEGIN
+    SELECT e.`first_name`, e.`last_name`
+    FROM `employees` as `e`
+    WHERE
+          CASE
+              WHEN `level` = 'Low' THEN e.`salary` < 30000
+              WHEN `level` = 'Average' THEN e.`salary` BETWEEN 30000 AND 50000
+              WHEN `level` = 'High' THEN e.`salary` > 50000
+              END
+    ORDER BY e.`first_name` DESC, e.`last_name` DESC;
+END;
+
+CALL `usp_get_employees_by_salary_level`('high');
+
+#07. Define Function
+CREATE FUNCTION `ufn_is_word_comprised` (`set_of_letters` VARCHAR(50), word VARCHAR(50))
+RETURNS BIT
+    DETERMINISTIC
+BEGIN
+    DECLARE `regex` VARCHAR(255);
+    DECLARE `result` BIT;
+    SET `regex` = concat('^[', `set_of_letters`, ']+$');
+    CASE
+        WHEN `word` REGEXP `regex` THEN SET `result` = 1;
+        ELSE SET `result` = 0;
+    END CASE;
+    RETURN `result`;
+END;
+
+SELECT `ufn_is_word_comprised`('oistmiahf', 'Sofia');
