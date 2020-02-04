@@ -68,6 +68,15 @@ CREATE TABLE `likes` (
 
 #Section 2: Data Manipulation Language (DML)
 #02. Insert
+INSERT INTO `likes` (`article_id`, `comment_id`, `user_id`)
+SELECT (SELECT length(u.`username`)
+        WHERE u.id % 2 = 0) AS `article_id`,
+       (SELECT length(u.`email`)
+        WHERE u.id %2 = 1) as `comment_id`,
+       u.`id` as `user_id`
+FROM `users` AS `u`
+WHERE u.`id` BETWEEN 16 AND 20;
+
 #03. Update
 #04. Delete
 #Section 3: Querying
