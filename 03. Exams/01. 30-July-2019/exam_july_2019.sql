@@ -141,6 +141,18 @@ ORDER BY c.`id` DESC;
 
 #Section 4: Programmability
 #10. Get users articles count
+CREATE FUNCTION `udf_users_articles_count` (`username` VARCHAR(30))
+RETURNS INT
+    DETERMINISTIC
+BEGIN
+    DECLARE `result` INT;
+    SET `result` = (SELECT count(ua.`article_id`)
+        FROM `users_articles` AS `ua`
+    JOIN `users` `u` ON `ua`.`user_id` = `u`.`id`
+    WHERE u.`username` = `username`);
+    RETURN `result`;
+END;
+
 #11. Like Article
 
 /*
