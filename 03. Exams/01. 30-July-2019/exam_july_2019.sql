@@ -104,6 +104,11 @@ FROM (
 ORDER BY `filtered`.`id`;
 
 #06. Golden articles
+SELECT ua.`article_id`, a.`title`
+FROM `users_articles` AS `ua`
+JOIN `articles` `a` ON `ua`.`article_id` = `a`.`id`
+WHERE ua.`article_id` = ua.`user_id`;
+
 #07. Extract categories
 #08. Extract the most commented social article
 #09. Extract the less liked comments
