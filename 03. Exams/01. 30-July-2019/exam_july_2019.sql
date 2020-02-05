@@ -122,6 +122,14 @@ GROUP BY c.`category`, `likes`, c.`id`
 ORDER BY `likes` DESC, `articles` DESC, c.`id`;
 
 #08. Extract the most commented social article
+SELECT a.`title`, count(c.`article_id`) as `comments`
+FROM `comments` AS `c`
+JOIN `articles` `a` ON `c`.`article_id` = `a`.`id`
+WHERE a.`category_id` = 5
+GROUP BY `article_id`
+ORDER BY `comments` DESC
+LIMIT 1;
+
 #09. Extract the less liked comments
 #Section 4: Programmability
 #10. Get users articles count
