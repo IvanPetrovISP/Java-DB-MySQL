@@ -95,6 +95,14 @@ WHERE `category_id` IS NULL;
 
 #Section 3: Querying
 #05. Extract 3 biggest articles
+SELECT `filtered`.`title`, `filtered`.`summary`
+FROM (
+    SELECT a.`id`, a.`title`, concat(substr(a.`content`, 1, 20), '...') as `summary`
+    FROM `articles` AS `a`
+    ORDER BY length(a.`content`) DESC
+    LIMIT 3) as `filtered`
+ORDER BY `filtered`.`id`;
+
 #06. Golden articles
 #07. Extract categories
 #08. Extract the most commented social article
