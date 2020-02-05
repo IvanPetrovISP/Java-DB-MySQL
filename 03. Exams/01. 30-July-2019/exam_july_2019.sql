@@ -154,6 +154,23 @@ BEGIN
 END;
 
 #11. Like Article
+CREATE PROCEDURE `udp_like_article` (`username` VARCHAR(30), `title` VARCHAR(30))
+BEGIN
+    IF ((SELECT u.`username` FROM `users` AS `u` WHERE u.`username` = `username`) IS NULL)
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Non-existent user.';
+    ELSEIF ((SELECT a.`title` FROM `articles` AS `a` WHERE a.`title` = `title`) IS NULL)
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Non-existent article.';
+    ELSE
+        INSERT INTO `likes` (`article_id`, `comment_id`, `user_id`)
+        SELECT (SELECT a.`id` FROM `articles` AS `a` WHERE a.`title` = `title`) AS `article`,
+               NULL AS `comment_id`,
+               (SELECT u.`id` FROM `users` AS `u` WHERE u.`username` = `username`) AS `user_id`;
+    END IF;
+END;
 
 /*
  The SoftUni Open Judge System does not accept the
