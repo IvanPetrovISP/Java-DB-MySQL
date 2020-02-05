@@ -141,6 +141,7 @@ ORDER BY c.`id` DESC;
 
 #Section 4: Programmability
 #10. Get users articles count
+DELIMITER ;;
 CREATE FUNCTION `udf_users_articles_count` (`username` VARCHAR(30))
 RETURNS INT
     DETERMINISTIC
@@ -151,9 +152,11 @@ BEGIN
     JOIN `users` `u` ON `ua`.`user_id` = `u`.`id`
     WHERE u.`username` = `username`);
     RETURN `result`;
-END;
+END ;;
+DELIMITER ;
 
 #11. Like Article
+DELIMITER ;;
 CREATE PROCEDURE `udp_like_article` (`username` VARCHAR(30), `title` VARCHAR(30))
 BEGIN
     IF ((SELECT u.`username` FROM `users` AS `u` WHERE u.`username` = `username`) IS NULL)
@@ -166,11 +169,12 @@ BEGIN
             SET MESSAGE_TEXT = 'Non-existent article.';
     ELSE
         INSERT INTO `likes` (`article_id`, `comment_id`, `user_id`)
-        SELECT (SELECT a.`id` FROM `articles` AS `a` WHERE a.`title` = `title`) AS `article`,
+        SELECT (SELECT a.`id` FROM `articles` AS `a` WHERE a.`title` = `title`) AS `article_id`,
                NULL AS `comment_id`,
                (SELECT u.`id` FROM `users` AS `u` WHERE u.`username` = `username`) AS `user_id`;
     END IF;
-END;
+END ;;
+DELIMITER ;
 
 /*
  The SoftUni Open Judge System does not accept the
