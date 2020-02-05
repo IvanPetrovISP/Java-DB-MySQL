@@ -110,6 +110,17 @@ JOIN `articles` `a` ON `ua`.`article_id` = `a`.`id`
 WHERE ua.`article_id` = ua.`user_id`;
 
 #07. Extract categories
+SELECT DISTINCT c.`category`, count(a.`category_id`) as `articles`,
+       (SELECT count(l.`article_id`)
+        FROM `likes` AS `l`
+        JOIN `articles` `a2` ON `l`.`article_id` = `a2`.`id`
+        JOIN `categories` `c2` ON `a2`.`category_id` = `c2`.`id`
+        WHERE c2.`id` = c.`id`) as `likes`
+FROM `categories` AS `c`
+JOIN `articles` `a` ON `c`.`id` = `a`.`category_id`
+GROUP BY c.`category`, `likes`, c.`id`
+ORDER BY `likes` DESC, `articles` DESC, c.`id`;
+
 #08. Extract the most commented social article
 #09. Extract the less liked comments
 #Section 4: Programmability
