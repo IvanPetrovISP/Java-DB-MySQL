@@ -131,6 +131,14 @@ ORDER BY `comments` DESC
 LIMIT 1;
 
 #09. Extract the less liked comments
+SELECT concat(substring(c.`comment`, 1, 20), '...') as `summary`
+FROM `comments` AS `c`
+WHERE c.`id` NOT IN (
+    SELECT l.`comment_id`
+    FROM `likes` AS `l`
+    WHERE l.`article_id` IS NULL)
+ORDER BY c.`id` DESC;
+
 #Section 4: Programmability
 #10. Get users articles count
 #11. Like Article
