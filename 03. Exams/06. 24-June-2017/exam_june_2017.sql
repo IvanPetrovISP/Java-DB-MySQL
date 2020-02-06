@@ -90,6 +90,9 @@ SET p.tests =
 WHERE p.tests = 0;
 
 #04. Delete
+DELETE FROM `users` AS `u`
+WHERE u.`id` NOT IN (SELECT uc.`user_id` FROM `users_contests` AS `uc` );
+
 #Section 3: Querying
 
 #09. Leaf Categories
