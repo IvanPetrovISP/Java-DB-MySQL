@@ -154,11 +154,12 @@ WHERE u.id = (SELECT uc.`user_id`
             LIMIT 1)
 ORDER BY s.`id` DESC;
 
-SELECT uc.`user_id`
-FROM `users_contests` AS `uc`
-GROUP BY uc.`user_id`
-ORDER BY count(uc.`contest_id`) DESC
-LIMIT 1;
+#13. Contests Maximum Points
+SELECT ct.`id`, ct.`name`, sum(p.`points`) as `maximum_points`
+FROM `contests` AS `ct`
+JOIN `problems` `p` ON `ct`.`id` = `p`.`contest_id`
+GROUP BY ct.`id`
+ORDER BY `maximum_points` DESC, ct.`id`;
 
 #Section 4: Programmability
 
