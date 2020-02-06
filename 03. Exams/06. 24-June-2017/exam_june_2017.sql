@@ -161,6 +161,17 @@ JOIN `problems` `p` ON `ct`.`id` = `p`.`contest_id`
 GROUP BY ct.`id`
 ORDER BY `maximum_points` DESC, ct.`id`;
 
+#14. Contestants Submissions
+SELECT ct.`id`, ct.`name`, count(s.`id`) as `submissions`
+FROM `contests` AS `ct`
+JOIN `problems` `p` ON `ct`.`id` = `p`.`contest_id`
+JOIN `submissions` `s` ON `p`.`id` = `s`.`problem_id`
+JOIN `users_contests` `uc` ON `ct`.`id` = `uc`.`contest_id`
+WHERE s.`user_id` = uc.`user_id`
+GROUP BY ct.`id`
+ORDER BY `submissions` DESC, ct.`id`;
+
+
 #Section 4: Programmability
 
 /*
