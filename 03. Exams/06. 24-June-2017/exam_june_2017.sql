@@ -110,6 +110,13 @@ FROM `problems` AS `p`
 WHERE p.`tests` > p.`points` AND p.`name` LIKE '% %'
 ORDER BY p.`id` DESC;
 
+#08. Full Path Problems
+SELECT p.`id`, concat_ws(' - ', c.`name`, ct.`name`, p.`name`) AS `full_path`
+FROM `problems` AS `p`
+JOIN `contests` `ct` ON `p`.`contest_id` = `ct`.`id`
+JOIN `categories` `c` ON `ct`.`category_id` = `c`.`id`
+ORDER BY p.`id`;
+
 #09. Leaf Categories
 SELECT c.`id`, c.`name`
 FROM `categories` AS `c`
