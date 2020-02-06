@@ -161,14 +161,11 @@ GROUP BY u.`id`
 ORDER BY `commits` DESC, u.`id`;
 
 #13. RecursiveCommits
-SELECT count(locate('Find.java', c.message)) as `count`
-FROM `commits` AS `c`;
-
 SELECT substring(f.`name`, 1, locate('.', f.`name`)-1) as `file`,
-       count(locate(f.`name`, c.`message`)) AS `recursive_count`
+       count(nullif(locate(f.`name`, c.`message`), 0)) AS `recursive_count`
 FROM `files` AS `f`
-JOIN `files` `f2` ON f.`id` = `f2`.`parent_id`
-JOIN `commits` `c` ON `f`.`commit_id` = `c`.`id`
+JOIN `files` `f2` ON f.`parent_id` = `f2`.`id`
+JOIN `commits` `c`
 WHERE f2.`id` = f.`parent_id` AND  f.`id` = f2.`parent_id` and f.`id` != f.`parent_id`
 GROUP BY `file`
 ORDER BY `file`;
