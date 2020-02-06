@@ -142,6 +142,24 @@ from (SELECT ct.`id`, ct.`name`, count(uc.`user_id`) as `count`
         LIMIT 5) AS `filtered`
 ORDER BY `filtered`.`count`, `filtered`.`id`;
 
+#12. Most Valuable Person
+SELECT s.`id`, u.`username`, p.`name`, concat(s.`passed_tests`, ' / ', p.`tests`)
+FROM `submissions` AS `s`
+JOIN `users` `u` ON `s`.`user_id` = `u`.`id`
+JOIN `problems` `p` ON `s`.`problem_id` = `p`.`id`
+WHERE u.id = (SELECT uc.`user_id`
+            FROM `users_contests` AS `uc`
+            GROUP BY uc.`user_id`
+            ORDER BY count(uc.`contest_id`) DESC
+            LIMIT 1)
+ORDER BY s.`id` DESC;
+
+SELECT uc.`user_id`
+FROM `users_contests` AS `uc`
+GROUP BY uc.`user_id`
+ORDER BY count(uc.`contest_id`) DESC
+LIMIT 1;
+
 #Section 4: Programmability
 
 /*
