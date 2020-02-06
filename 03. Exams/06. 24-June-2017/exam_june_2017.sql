@@ -195,6 +195,24 @@ BEGIN
     END IF;
 END;
 
+#16. Evaluate Submission
+CREATE PROCEDURE `udp_evaluate` (`input_id` INT)
+BEGIN
+    IF ((SELECT s.`id` FROM `submissions` AS `s` WHERE s.`id` = `input_id`) IS NULL )
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Submission does not exist!';
+    END IF;
+
+    INSERT INTO `evaluated_submissions` (`id`, `problem`, `user`, `result`)
+    SELECT s.`id`, p.`name`, u.`username`,
+           ceil(p.`points` / p.`tests` * s.`passed_tests`) as `result`
+    FROM `submissions` AS `s`
+    JOIN `problems` `p` ON `s`.`problem_id` = `p`.`id`
+    JOIN `users` `u` ON `s`.`user_id` = `u`.`id`
+    WHERE s.`id` = `input_id`;
+END;
+
 /*
  The SoftUni Open Judge System does not accept the
  DETERMINISTIC and DELIMITER clauses so the functions
