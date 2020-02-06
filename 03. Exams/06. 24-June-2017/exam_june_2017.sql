@@ -99,6 +99,11 @@ SELECT u.`id`, u.`username`, u.`email`
 FROM `users` AS `u`
 ORDER BY u.`id`;
 
+#06. Root Categories
+SELECT c.`id`, c.`name`
+FROM `categories` AS `c`
+WHERE c.`parent_id` IS NULL;
+
 #09. Leaf Categories
 SELECT c.`id`, c.`name`
 FROM `categories` AS `c`
