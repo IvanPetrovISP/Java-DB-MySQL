@@ -213,6 +213,27 @@ BEGIN
     WHERE s.`id` = `input_id`;
 END;
 
+#Section 5: Bonus
+#17. Check Constraint
+CREATE TRIGGER `bonus`
+BEFORE INSERT ON `problems`
+FOR EACH ROW
+BEGIN
+    IF (`NEW`.`name` NOT LIKE '% %')
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The given name is invalid!';
+    ELSEIF (NEW.points <= 0)
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The problem\'s points cannot be less or equal to 0!';
+    ELSEIF (NEW.tests <= 0)
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The problem\'s tests cannot be less or equal to 0!';
+    END IF;
+END;
+
 /*
  The SoftUni Open Judge System does not accept the
  DETERMINISTIC and DELIMITER clauses so the functions
