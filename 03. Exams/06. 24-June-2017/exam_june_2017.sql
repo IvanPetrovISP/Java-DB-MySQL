@@ -76,6 +76,19 @@ FROM `problems` AS `p`
 WHERE p.`id` BETWEEN 1 AND 10;
 
 #03. Update
+UPDATE `problems` AS `p`
+JOIN `contests` `ct` ON `p`.`contest_id` = `ct`.`id`
+JOIN `categories` `c` ON `ct`.`category_id` = `c`.`id`
+SET p.tests =
+    CASE
+        WHEN p.id % 3 = 0 THEN length(c.`name`)
+        WHEN p.id % 3 = 1 THEN (SELECT sum(s.id)
+                    FROM `submissions` AS `s`
+                    WHERE `s`.`problem_id` = `p`.`id`)
+        WHEN p.id % 3 = 2 THEN length(ct.name)
+    END
+WHERE p.tests = 0;
+
 #04. Delete
 #Section 3: Querying
 
@@ -84,7 +97,25 @@ SELECT c.`id`, c.`name`
 FROM `categories` AS `c`
 LEFT JOIN `categories` AS `c2` ON c2.`parent_id` = c.`id`
 WHERE c2.`parent_id` is NULL
-ORDER BY c.`name`, c.`id`
+ORDER BY c.`name`, c.`id`;
+
+#10. Mainstream Passwords
+SELECT u.`id`, u.`username`, u.`password`
+FROM `users` AS `u`
+WHERE u.`password` IN (SELECT u.`password` FROM `users` `u`
+                      GROUP BY u.`password`
+                      HAVING COUNT(u.`password`) > 1)
+ORDER BY u.`username`, u.`id`;
+
+#11. Most Participated Contests
+SELECT `filtered`.`id`, `filtered`.`name`, `filtered`.`count`
+from (SELECT ct.`id`, ct.`name`, count(uc.`user_id`) as `count`
+        FROM `contests` AS `ct`
+        LEFT JOIN `users_contests` `uc` ON `ct`.`id` = `uc`.`contest_id`
+        GROUP BY uc.`contest_id`
+        ORDER BY `count` DESC
+        LIMIT 5) AS `filtered`
+ORDER BY `filtered`.`count`, `filtered`.`id`;
 
 #Section 4: Programmability
 
