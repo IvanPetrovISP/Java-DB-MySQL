@@ -104,6 +104,12 @@ SELECT c.`id`, c.`name`
 FROM `categories` AS `c`
 WHERE c.`parent_id` IS NULL;
 
+#07. Well Tested Problems
+SELECT p.`id`, p.`name`, p.`tests`
+FROM `problems` AS `p`
+WHERE p.`tests` > p.`points` AND p.`name` LIKE '% %'
+ORDER BY p.`id` DESC;
+
 #09. Leaf Categories
 SELECT c.`id`, c.`name`
 FROM `categories` AS `c`
