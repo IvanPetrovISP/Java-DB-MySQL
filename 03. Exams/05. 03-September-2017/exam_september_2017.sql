@@ -121,9 +121,9 @@ WHERE (
 ORDER BY u.`id`;
 
 #10. Spam Posts
-SELECT p.`id`, p.`caption`, count(p.`id`) AS `comments`
+SELECT p.`id`, p.`caption`, count(c.`post_id`) AS `comments`
 FROM `posts` AS `p`
-JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
+LEFT JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
 GROUP BY p.`id`
 ORDER BY `comments` DESC, p.`id`
 LIMIT 5;
@@ -148,12 +148,16 @@ GROUP BY u.`id`
 ORDER BY `my_comments` DESC, u.`id`;
 
 #13. User Top Posts
-SELECT p.`user_id` as `id`, u.`username`, p.`caption` as `post`
-FROM `posts` AS `p`
-JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
-JOIN `users` `u` ON `p`.`user_id` = `u`.`id`
-GROUP BY p.`user_id`, (SELECT count(c.`post_id`))
-ORDER BY p.`user_id`;
+SELECT u.`id`, u.`username`, `top_comment`.`caption`
+FROM
+    (SELECT p.`id`, p.`caption`, count(c.`post_id`) AS `comments`, p.`user_id`
+    FROM `posts` AS `p`
+    LEFT JOIN `comments` `c` ON `p`.`id` = `c`.`post_id`
+    GROUP BY p.`id`
+    ORDER BY `comments` DESC, p.`id`) as `top_comment`
+JOIN `users` `u` ON u.`id` = `top_comment`.`user_id`
+GROUP BY u.`id`
+ORDER BY u.`id`;
 
 #14. Posts and Commentators
 SELECT p.`id`, p.`caption`, count(DISTINCT c.`user_id`) as `users`
@@ -169,14 +173,14 @@ CREATE PROCEDURE `udp_post` (`username` VARCHAR(255), `password` VARCHAR(255), `
 BEGIN
     IF ((SELECT u.`password` FROM `users` AS `u`
         WHERE u.`username` = `username`) != `password`)
-    THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Password is incorrect!';
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Password is incorrect!';
     ELSEIF ((SELECT p.`path` FROM `pictures` AS `p`
         WHERE p.`path` = `path`) IS NULL )
-    THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The picture does not exist!';
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The picture does not exist!';
     ELSE
         INSERT INTO `posts` (`caption`, `user_id`, `picture_id`)
         SELECT `caption`,
