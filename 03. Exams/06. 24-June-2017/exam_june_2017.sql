@@ -94,6 +94,10 @@ DELETE FROM `users` AS `u`
 WHERE u.`id` NOT IN (SELECT uc.`user_id` FROM `users_contests` AS `uc` );
 
 #Section 3: Querying
+#05. Users
+SELECT u.`id`, u.`username`, u.`email`
+FROM `users` AS `u`
+ORDER BY u.`id`;
 
 #09. Leaf Categories
 SELECT c.`id`, c.`name`
