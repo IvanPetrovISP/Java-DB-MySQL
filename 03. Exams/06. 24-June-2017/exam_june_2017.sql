@@ -173,7 +173,27 @@ ORDER BY `submissions` DESC, ct.`id`;
 
 #Section 4: Programmability
 #15. Login
-
+CREATE PROCEDURE `udp_login` (`username` VARCHAR(255), `password` VARCHAR(255))
+BEGIN
+    IF ((SELECT u.`username` FROM `users` AS `u` WHERE u.`username` = `username`) IS NULL )
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Username does not exist!';
+    ELSEIF ((SELECT u.`password` FROM `users` AS `u` WHERE u.`username` = `username`) != `password`)
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Password is incorrect!';
+    ELSEIF ((SELECT l.`username` FROM `logged_in_users` AS `l` WHERE l.`username` = `username`) IS NOT NULL )
+        THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'User is already logged in!';
+    ELSE
+        INSERT INTO `logged_in_users` (`id`, `username`, `password`, `email`)
+        SELECT u.`id`, u.`username`, u.`password`, u.`email`
+            FROM `users` AS `u`
+            WHERE u.`username` = `username`;
+    END IF;
+END;
 
 /*
  The SoftUni Open Judge System does not accept the
